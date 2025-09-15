@@ -1,0 +1,47 @@
+name: Manual-V2ray
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Run V2ray
+        run: |
+          docker run -d --restart=always -v /etc/v2ray:/etc/v2ray -p 8080:8080 v2fly/v2fly-core
+          wget https://github.com/v2fly/v2ray-core/releases/latest/download/v2ray-linux-64.zip
+          unzip v2ray-linux-64.zip
+          chmod +x v2ray
+          cat << EOF > config.json
+          {
+            "inbounds": [
+              {
+                "port": 8080,
+                "protocol": "vmess",
+                "settings": {
+                  "clients": [
+                    {
+                      "id": "8f91b6a0-e8ee-11ec-8fea-0242ac120002",
+                      "alterId": 0
+                    }
+                  ]
+                }
+              }
+            ],
+            "outbounds": [
+              {
+                "protocol": "freedom"
+              }
+            ]
+          }
+          EOF
+          ./v2ray -config=config.json &
+          sleep 30
+          VMESS_URL=$(echo -n '{"v":"2","ps":"GitHub-V2Ray","add":"'$(curl -s ifconfig.me )'","port":"8080","id":"8f91b6a0-e8ee-11ec-8fea-0242ac120002","aid":"0","net":"tcp","type":"none","host":"","path":"","tls":""}' | base64 -w 0)
+          echo "=================================================="
+          echo "V2RAY VMESS URL: vmess://${VMESS_URL}"
+          echo "=================================================="
+          sleep 36000
