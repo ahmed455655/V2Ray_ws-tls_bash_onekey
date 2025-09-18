@@ -1,4 +1,4 @@
-name: Mirage-VPS
+name: Mirage-VPS-Final
 
 on:
   workflow_dispatch:
@@ -18,11 +18,12 @@ jobs:
           sudo sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
           sudo service ssh start
 
-          # Install and run ngrok
+          # Install and run ngrok in the foreground
           curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
           echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
           sudo apt update
           sudo apt install ngrok
           ngrok config add-authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
-          echo "Starting ngrok tunnel... The address will appear below. The process will keep running."
+          
+          echo "Starting ngrok tunnel in the foreground. The address will appear below."
           ngrok tcp 22
